@@ -1,6 +1,11 @@
 :- module(halt_parser, [parse/2, parse_file/2]).
 :- use_module(library(dcg/basics)).
 
+%! <module> Parse the assembler code file
+%%
+%% Our intermediate representation is encoded directly in the
+%% instruction patterns below.
+
 instruction(and(A,B))           --> "AND", whites, integer(A), whites, integer(B).
 instruction(or(A,B))            --> "OR",  whites, integer(A), whites, integer(B).
 instruction(exclusive_or(A,B))  --> "XOR", whites, integer(A), whites, integer(B).
@@ -21,6 +26,14 @@ instructions([]) --> [].
 
 program(Program) --> integer(_), blanks, instructions(Program).
 
+%! parse(+Input, -Program) is semidet.
+%%
+%%   Parse string Input into a sequence of code statements.
 parse(Input, Program) :- phrase(program(Program), Input).
+
+%! parse_file(+Filename, -Program) is semidet.
+%%
+%%   Parse the file specified by Filename into a sequence of code
+%%   statements.
 parse_file(Filename, Program) :-
     pio:phrase_from_file(halt_parser:program(Program), Filename).
