@@ -15,9 +15,11 @@
 %%   machine(Code, InstructionCount, Registers, InstructionPointer, Halted)
 %%
 %%     - Code                 A list of instructions as defined by halt_parser
-%%     - InstructionCount     An integer, the number of instructions executed so far
+%%     - InstructionCount     An integer, the number of instructions executed
+%%                            so far
 %%     - Registers            A list containing 32 integer registers
-%%     - InstructionPointer   An integer, the 0-based index of the next instruction to run
+%%     - InstructionPointer   An integer, the 0-based index of the next
+%%                            instruction to run
 %%     - Halted               Whether or not the machine is currently halted
 
 %! initialize(+Code, -Machine) is det.

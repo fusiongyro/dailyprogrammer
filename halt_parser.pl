@@ -6,15 +6,17 @@
 %% Our intermediate representation is encoded directly in the
 %% instruction patterns below.
 
-instruction(and(A,B))           --> "AND", whites, integer(A), whites, integer(B).
-instruction(or(A,B))            --> "OR",  whites, integer(A), whites, integer(B).
-instruction(exclusive_or(A,B))  --> "XOR", whites, integer(A), whites, integer(B).
-instruction(not(A))             --> "NOT", whites, integer(A).
-instruction(move(A,B))          --> "MOV", whites, integer(A), whites, integer(B).
-instruction(set(A,C))           --> "SET", whites, integer(A), whites, integer(C).
-instruction(random(A))          --> "RANDOM", whites, integer(A).
-instruction(jump(X))            --> "JMP", whites, integer(X).
-instruction(jump_if_zero(X, A)) --> "JZ", whites, integer(X), whites, integer(A).
+int(X) --> integer(X).
+
+instruction(and(A,B))           --> "AND", whites, int(A), whites, int(B).
+instruction(or(A,B))            --> "OR",  whites, int(A), whites, int(B).
+instruction(exclusive_or(A,B))  --> "XOR", whites, int(A), whites, int(B).
+instruction(not(A))             --> "NOT", whites, int(A).
+instruction(move(A,B))          --> "MOV", whites, int(A), whites, int(B).
+instruction(set(A,C))           --> "SET", whites, int(A), whites, int(C).
+instruction(random(A))          --> "RANDOM", whites, int(A).
+instruction(jump(X))            --> "JMP", whites, int(X).
+instruction(jump_if_zero(X, A)) --> "JZ", whites, int(X), whites, int(A).
 instruction(halt)               --> "HALT".
 
 instructions([Inst|Instructions]) -->
