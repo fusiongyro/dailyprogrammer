@@ -21,20 +21,25 @@ spec(halt)              :- halted := true.
 
 %% Basic operations
 evaluate(M, m(A),        V) :- halt_machine:get_register(M, A, V).
-evaluate(M, A/\B,        V) :- evaluate(M, A, RA), evaluate(M, B, RB), V is RA /\ RB.
-evaluate(M, A\/B,        V) :- evaluate(M, A, RA), evaluate(M, B, RB), V is RA \/ RB.
-evaluate(M, A xor B,     V) :- evaluate(M, A, RA), evaluate(M, B, RB), V is RA xor RB.
+evaluate(M, A/\B,        V) :- evaluate(M, A, RA), evaluate(M, B, RB),
+                               V is RA /\ RB.
+evaluate(M, A\/B,        V) :- evaluate(M, A, RA), evaluate(M, B, RB),
+                               V is RA \/ RB.
+evaluate(M, A xor B,     V) :- evaluate(M, A, RA), evaluate(M, B, RB),
+                               V is RA xor RB.
 evaluate(M, \ A,         V) :- evaluate(M, A, RA), V is \ RA.
-evaluate(M, A -> B ; C,  V) :- evaluate(M, A, RA), RA -> evaluate(M, B, V) ; evaluate(M, C, V).
-evaluate(M, m(A) := B,   V) :- evaluate(M, B, RB), halt_machine:set_register(M, A, RB, V).
+evaluate(M, A -> B ; C,  V) :- evaluate(M, A, RA),
+                               RA -> evaluate(M, B, V) ; evaluate(M, C, V).
+evaluate(M, m(A) := B,   V) :- evaluate(M, B, RB), set_register(M, A, RB, V).
 evaluate(_, A,           A) :- number(A).
 evaluate(_, random,      V) :- V is random(2).
-evaluate(M, advance,     V) :- halt_machine:advance(M, V).
-evaluate(M, A = B,       V) :- evaluate(M, A, RA), evaluate(M, B, RB), RA = RB -> V = true ; V = false.
+evaluate(M, advance,     V) :- advance(M, V).
+evaluate(M, A = B,       V) :- evaluate(M, A, RA), evaluate(M, B, RB),
+                               RA = RB -> V = true ; V = false.
 
 %% Special cases
-evaluate(M, ip := X,        MA) :- halt_machine:set_instruction_pointer(M, X, MA).
-evaluate(M, halted := true, MA) :- halt_machine:set_halted(M, MA).
+evaluate(M, ip := X,        MA) :- set_instruction_pointer(M, X, MA).
+evaluate(M, halted := true, MA) :- set_halted(M, MA).
 
 %% Perform the specification
 evaluate(M, X, V) :-
