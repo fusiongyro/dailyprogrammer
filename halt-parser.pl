@@ -3,7 +3,7 @@
 
 instruction(and(A,B))           --> "AND", whites, integer(A), whites, integer(B).
 instruction(or(A,B))            --> "OR",  whites, integer(A), whites, integer(B).
-instruction(xor(A,B))           --> "XOR", whites, integer(A), whites, integer(B).
+instruction(exclusive_or(A,B))  --> "XOR", whites, integer(A), whites, integer(B).
 instruction(not(A))             --> "NOT", whites, integer(A).
 instruction(move(A,B))          --> "MOV", whites, integer(A), whites, integer(B).
 instruction(set(A,C))           --> "SET", whites, integer(A), whites, integer(C).

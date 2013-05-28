@@ -20,7 +20,7 @@ set_register(N, Value, [X|Rest], [X|Remaining]) :-
     set_register(N0, Value, Rest, Remaining).
 
 get_register(machine(_, Registers, _, _), Register, Value) :-
-    nth0(Registers, Register, Value).
+    nth0(Register, Registers, Value).
 
 set_instruction_pointer(machine(IC, Instructions, _, Halted),
 			X,
@@ -31,26 +31,31 @@ set_halted(machine(IC0, Code, IP0, _),
     succ(IC0, IC1),
     succ(IP0, IP1).
 
+%% The table of operations
 spec(and(A,B))          :- m(A) := m(A) \/ m(B).
 spec(or(A,B))           :- m(A) := m(A) /\  m(B).
-spec(xor(A,B))          :- m(A) := m(A) xor m(B).
+spec(exclusive_or(A,B)) :- m(A) := m(A) xor m(B).
 spec(not(A))            :- m(A) := \ m(A).
 spec(move(A,B))         :- m(A) := m(B).
 spec(set(A,C))          :- m(A) := C.
-spec(random(A))         :- m(A) := random(2).
+spec(random(A))         :- m(A) := random.
 spec(jump(X))           :- ip   := X.
 spec(jump_if_zero(X,A)) :- m(A) -> ip := X.
 spec(halt)              :- halted := true.
 
-execute(M, and(A,B), NM)           :- get_register(M, A, RA), get_register(M, B, RB), V is RA /\ RB, set_register(M, A, V, NM).
-execute(M, or(A,B), NM)            :- get_register(M, A, RA), get_register(M, B, RB), V is RA \/ RB, set_register(M, A, V, NM).
-execute(M, xor(A,B), NM)           :- get_register(M, A, RA), get_register(M, B, RB), V is RA xor RB, set_register(M, A, V, NM).
-execute(M, not(A), NM)             :- get_register(M, A, RA), V is \ RA, set_register(M, A, V, NM).
-execute(M, move(A,B), NM)          :- get_register(M, B, RB), set_register(M, A, RB, NM).
-execute(M, set(A,C), NM)           :- set_register(M, A, C, NM).
-execute(M, random(A), NM)          :- V is random(2), set_register(M, A, V, NM).
-execute(M, jump(X), NM)            :- set_instruction_pointer(M, X, NM).
-execute(M, jump_if_zero(X, A), NM) :- get_register(M, A, X),
-				      X =:= 0 -> set_instruction_pointer(M, X, NM).
-execute(M, halt, NM)               :- set_halted(M, NM).
+%% Basic operations
+evaluate(M, m(A), V) :- get_register(M, A, V).
+evaluate(M, A/\B, V) :- evaluate(M, A, RA), evaluate(M, B, RB), V is RA /\ RB.
+evaluate(M, A\/B, V) :- evaluate(M, A, RA), evaluate(M, B, RB), V is RA \/ RB.
+evaluate(M, A xor B, V) :- evaluate(M, A, RA), evaluate(M, B, RB), V is RA xor RB.
+evaluate(M, \ A, V) :- evaluate(M, A, RA), V is \ RA.
+evaluate(M, A -> B, V) :- evaluate(M, A, RA), RA -> evaluate(M, B, V).
+evaluate(M, m(A) := B, V) :- evaluate(M, B, RB), set_register(M, A, RB, V).
+evaluate(_, A, A) :- number(A).
+evaluate(M, ip := X, MA) :- set_instruction_pointer(M, X, MA).
+evaluate(M, halted := true, MA) :- set_halted(M, MA).
+evaluate(_, random, V) :- V is random(2).
 
+%% Perform the specification
+evaluate(M, X, V) :-
+    clause(spec(X), Body), evaluate(M, Body, V).
