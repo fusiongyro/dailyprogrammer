@@ -3,6 +3,10 @@
 
 :- op(700, xfy, :=).
 
+%! <module> Assembler
+%%
+%% Given a sequence of machine instructions, perform them on the raw machine.
+
 %% The table of operations
 spec(and(A,B))          :- m(A) := m(A) \/ m(B).
 spec(or(A,B))           :- m(A) := m(A) /\  m(B).
@@ -45,10 +49,16 @@ evaluate(M, X, V) :-
 %%   halting.
 execute(Code) :- execute(Code, _).
 
+%! execute(+Code, -FinalMachine)
+%%
+%%   Execute Code as a sequence of assembler instructions, unifying
+%%   the final state of the machine with FinalMachine.
 execute(Code, FinalMachine) :-
     halt_machine:initialize(Code, InitialMachine),
     execute_loop(InitialMachine, FinalMachine).
 
+%% Executes a single instruction, then determine if we should loop or
+%% not, looping if so.
 execute_loop(Machine0, MachineN) :-
     execute_one(Machine0, Machine1),
 
@@ -57,14 +67,9 @@ execute_loop(Machine0, MachineN) :-
        -> do_halt(Machine1)
         ; execute_loop(Machine1, MachineN)).
 
-show_machine(machine(_, IC, Regs, IP, Halted)) :-
-    write('Counter: '), write(IC), nl,
-    write('Registers: '), write(Regs), nl,
-    write('IP: '), write(IP), nl,
-    write('Halted: '), write(Halted), nl,
-    nl.
-
-%% Executes one instruction
+%! execute_one(+InputMachine, -OutputMachine) is semidet.
+%%
+%%   Executes one instruction.
 execute_one(Machine0, Machine1) :-
     %% fetch the next instruction
     halt_machine:next_instruction(Machine0, Inst),
@@ -72,6 +77,10 @@ execute_one(Machine0, Machine1) :-
     %% evaluate it
     evaluate(Machine0, Inst, Machine1).
 
+%! do_halt(+Machine) is det.
+%%
+%%   Determine whether halt was artificial or natural and write to
+%%   standard output accordingly.
 do_halt(machine(_, _, _, _, true)) :-
     write('Program halts!'), nl.
 do_halt(machine(Code, _, _, IP, _)) :-
