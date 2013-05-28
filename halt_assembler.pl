@@ -21,9 +21,9 @@ spec(halt)              :- halted := true.
 
 %% Basic operations
 evaluate(M, m(A),        V) :- halt_machine:get_register(M, A, V).
-evaluate(M, A/\B,        V) :- evaluate(M, A, RA), evaluate(M, B, RB),
+evaluate(M, A /\ B,      V) :- evaluate(M, A, RA), evaluate(M, B, RB),
                                V is RA /\ RB.
-evaluate(M, A\/B,        V) :- evaluate(M, A, RA), evaluate(M, B, RB),
+evaluate(M, A \/ B,      V) :- evaluate(M, A, RA), evaluate(M, B, RB),
                                V is RA \/ RB.
 evaluate(M, A xor B,     V) :- evaluate(M, A, RA), evaluate(M, B, RB),
                                V is RA xor RB.
@@ -61,7 +61,7 @@ execute(Code) :- execute(Code, _).
 execute(Code, FinalMachine) :-
     halt_machine:initialize(Code, InitialMachine),
     execute_loop(InitialMachine, FinalMachine).
-
+
 %% Executes a single instruction, then determine if we should loop or
 %% not, looping if so.
 execute_loop(Machine0, MachineN) :-

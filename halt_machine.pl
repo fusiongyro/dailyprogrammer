@@ -65,7 +65,7 @@ set_register(N, Value, [X|Rest], [X|Remaining]) :-
 %%   Register in the supplied Machine.
 get_register(machine(_, _, Registers, _, _), Register, Value) :-
     nth0(Register, Registers, Value).
-
+
 %! set_instruction_pointer(+Machine, +NewIP, -Machine) is det.
 %%
 %%   Set the instruction pointer in new copy of Machine to NewIP.
