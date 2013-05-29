@@ -3,8 +3,8 @@
 A brief tour of the simulation. The main function looks like this:
 
     :::prolog
-        halt_parser:parse_file(File, Code),
-        halt_assembler:execute(Code).
+    halt_parser:parse_file(File, Code),
+    halt_assembler:execute(Code).
 
 The `halt_parser` is a straightforward DCG. The assembler is a little
 more interesting. The spec has been translated directly into code like
@@ -23,7 +23,7 @@ It will then apply other rules to figure out how to evaluate the
 specifications:
 
     :::prolog
-    evaluate(M, m(A),        V) :- halt_machine:get_register(M, A, V).
+    evaluate(M, m(A),        V) :- get_register(M, A, V).
     ...
     evaluate(M, m(A) := B,   V) :- evaluate(M, B, RB), set_register(M, A, RB, V).
 
