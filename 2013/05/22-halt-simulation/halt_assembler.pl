@@ -12,8 +12,8 @@
  */
 
 % The table of operations
-spec(and(A,B))          :- m(A) := m(A) \/ m(B).
-spec(or(A,B))           :- m(A) := m(A) /\  m(B).
+spec(and(A,B))          :- m(A) := m(A) /\ m(B).
+spec(or(A,B))           :- m(A) := m(A) \/  m(B).
 spec(exclusive_or(A,B)) :- m(A) := m(A) xor m(B).
 spec(not(A))            :- m(A) := \ m(A).
 spec(move(A,B))         :- m(A) := m(B).
