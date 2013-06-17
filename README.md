@@ -10,3 +10,5 @@ So far I have:
    [Spec on /r/dailyprogrammer](http://www.reddit.com/r/dailyprogrammer/comments/17f3y2/012813_challenge_119_easy_change_calculator/)
  * [Sum Digits II (easy)](https://bitbucket.org/fusiongyro/dailyprogrammer/src/tip/2013/06/04-sum-digits/sum_digits.pl) (in Prolog).
    [Spec on /r/dailyprogrammer](http://www.reddit.com/r/dailyprogrammer/comments/1fnutb/06413_challenge_128_easy_sumthedigits_part_ii/)
+ * [Roll the Dice (easy)](https://bitbucket.org/fusiongyro/dailyprogrammer/src/tip/2013/06/17-roll-the-dice/die.pl) (in Prolog)
+   [Spec on /r/dailyprogrammer](http://www.reddit.com/r/dailyprogrammer/comments/1givnn/061713_challenge_130_easy_roll_the_dies/)
