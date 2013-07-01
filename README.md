@@ -12,3 +12,5 @@ So far I have:
    [Spec on /r/dailyprogrammer](http://www.reddit.com/r/dailyprogrammer/comments/1fnutb/06413_challenge_128_easy_sumthedigits_part_ii/)
  * [Roll the Dice (easy)](https://bitbucket.org/fusiongyro/dailyprogrammer/src/tip/2013/06/17-roll-the-dice/die.pl) (in Prolog)
    [Spec on /r/dailyprogrammer](http://www.reddit.com/r/dailyprogrammer/comments/1givnn/061713_challenge_130_easy_roll_the_dies/)
+ * [Test the Tests (easy)](https://bitbucket.org/fusiongyro/dailyprogrammer/src/tip/2013/07/01-test-the-tests/test.pl) (in Prolog)
+   [Spec on /r/dailyprogrammer](http://www.reddit.com/r/dailyprogrammer/comments/1heozl/070113_challenge_131_easy_who_tests_the_tests/) (in Prolog)
