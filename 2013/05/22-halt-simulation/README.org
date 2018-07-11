@@ -1,0 +1,147 @@
+#+TITLE: Daily Programmer Intermediate #125 - “Halt” Simulator in Prolog
+#+AUTHOR: Daniel K Lyons
+#+OPTIONS: ':t ^:nil
+
+This is an implementation of [[http://www.reddit.com/r/dailyprogrammer/comments/1euacb/052213_challenge_125_intermediate_halt_its][Intermediate Challenge #125]], "Halt! It's
+simulation time!"
+
+The crux of the problem comes down to a table of virtual machine
+instructions like this:
+
+| Instruction | Description                                          |
+|-------------+------------------------------------------------------|
+| AND a b     | M[a] = M[a] bit-wise and M[b]                        |
+| SET a c     | M[a] = c                                             |
+| JZ x a      | Start executing instructions at index x if M[a] == 0 |
+
+I came up with the virtual machine abstraction, a 5-tuple ~machine~
+with values for code, instruction pointer, instruction count, register
+values and whether or not the machine is halted. Then I defined some
+functions like ~get_register/3~, ~set_register/4~,
+~set_instruction_pointer/3~ which take a machine and some other
+arguments (a register number, for instance) and then return a value or
+a new machine with the appropriate change having been made. This is
+defined in [[halt_machine.pl][halt_machine.pl]].
+
+Then I wrote a parser for the assembler input. It's quite simple,
+looking essentially like:
+
+#+BEGIN_SRC prolog
+instruction(and(A,B))           --> "AND", whites, int(A), whites, int(B).
+instruction(set(A,C))           --> "SET", whites, int(A), whites, int(C).
+instruction(jump_if_zero(X, A)) --> "JZ",  whites, int(X), whites, int(A).
+#+END_SRC
+
+The entry point to the parser handles the rest:
+
+#+BEGIN_SRC prolog
+instructions([Inst|Instructions]) -->
+    instruction(Inst),
+    blanks,
+    !,
+    instructions(Instructions).
+instructions([]) --> [].
+
+program(Program) --> integer(_), blanks, instructions(Program).
+#+END_SRC
+
+A sample program like this:
+
+#+BEGIN_EXAMPLE
+3
+SET 1 15
+AND 0 1
+JZ  0 1
+#+END_EXAMPLE
+
+will thus be parsed into a "program" like so: ~[set(1,15), and(0,1),
+jump_if_zero(0,1)]~. The assembler is defined in [[halt_parser.pl][halt_parser.pl]].
+
+The table of operations is encoded directly using a custom operator:
+
+#+BEGIN_SRC prolog
+:- op(700, xfy, :=).
+
+spec(and(A,B))          :- m(A) := m(A) /\ m(B).
+spec(set(A,C))          :- m(A) := C.
+spec(jump_if_zero(X,A)) :- (m(A) = 0) -> ip := X ; advance.
+#+END_SRC
+
+Our evaluator is designed to first try to evaluate the instruction by
+loading and trying to evaluate the specification:
+
+#+BEGIN_SRC 
+evaluate(M, X, V) :-
+    clause(spec(X), Body), evaluate(M, Body, V).
+#+END_SRC
+
+So, if I were to try ~evaluate(M, and(0,1), V)~ it will expand to
+~evaluate(M, m(0) := m(0) /\ m(1), V)~. The rest of the rules for
+~evaluate/3~ handle the expansion in various ways:
+
+#+BEGIN_SRC prolog
+evaluate(_, A,           A) :- number(A).
+evaluate(M, m(A),        V) :- get_register(M, A, V).
+evaluate(M, A /\ B,      V) :- evaluate(M, A, RA), evaluate(M, B, RB),
+                               V is RA /\ RB.
+evaluate(M, A -> B ; C,  V) :- evaluate(M, A, RA),
+                               RA -> evaluate(M, B, V) ; evaluate(M, C, V).
+evaluate(M, m(A) := B,   V) :- evaluate(M, B, RB), set_register(M, A, RB, V).
+
+evaluate(M, advance,     V) :- advance(M, V).
+evaluate(M, ip := X,    MA) :- set_instruction_pointer(M, X, MA).
+#+END_SRC
+
+The evaluation of ~m(0) := m(0) /\ m(1)~ will trigger the evaluation
+of ~m(0) /\ m(1)~, which will trigger the evaluation of ~m(0)~, then
+~m(1)~, then ~A /\ B~ as it breaks the expression down into parts and
+evaluates each subtree, before evaluating ~m(0) := V~ to update the
+register. Special cases such as ~halted := true~ and ~ip := X~ are
+handled by calling special procedures to update other aspects of the
+machine.
+
+The gain here is hard to overstate. Prolog doesn't have arrays, for
+instance, but our sublanguage does. It's easy to verify that the formal
+specification embedded in Prolog does the right thing, and it's easy
+to verify that the sublanguage evaluator does the right thing. I think
+this technique will probably generalize nicely to other scenarios with
+Prolog. The rest of the code is visible in [[halt_assembler.pl][halt_assembler.pl]].
+
+This module doesn't export the evaluation function directly; instead,
+callers are expected to provide the code and allow this module to
+handle executing it via ~execute/1~ and ~execute/2~, which run the
+code on a new machine, either discarding the final machine or
+returning it. The execution is also quite simple:
+
+#+BEGIN_SRC prolog
+execute(Code, FinalMachine) :-
+    initialize(Code, InitialMachine),
+    execute_loop(InitialMachine, FinalMachine).
+#+END_SRC
+
+The loop is also pretty simple:
+
+#+BEGIN_SRC prolog
+execute_loop(Machine0, MachineN) :-
+    execute_one(Machine0, Machine1),
+
+    %% if we're halted, display the message; otherwise continue
+    ((is_halted(Machine1) ; instruction_count(Machine1, 10000))
+       -> do_halt(Machine1)
+        ; execute_loop(Machine1, MachineN)).
+#+END_SRC
+
+The halt semantics there are as specified; either the machine just
+executed ~HALT~ or we're at instruction 10,000. ~execute_one~ simply
+finds the next instruction and prepares to execute it. ~do_halt~
+prints out whether the machine halted of its own accord or if it hit
+the 10,000 instruction barrier.
+
+The main program is suitably simple:
+
+#+BEGIN_SRC prolog
+process_file(File) :-
+    halt_parser:parse_file(File, Code),
+    halt_assembler:execute(Code).
+#+END_SRC
+
